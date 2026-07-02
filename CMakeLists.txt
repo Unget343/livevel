@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.28)
 
 # Ninja + MSVC: skip link step in compiler check when rc.exe is not on PATH.
 if(WIN32)
@@ -12,9 +12,22 @@ if(POLICY CMP0141)
   )
 endif()
 
-project(livevel LANGUAGES CXX)
+project(livevel LANGUAGES C CXX VERSION 1.0.0)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+option(USE_CPM "Whether to use CPM" OFF)
+
+include(CPM.cmake)
+
+if(USE_CPM)
+  cpmaddpackage("gh:OpenCV/opencv@4.8.1")
+endif()
 
 set(OpenCV_DIR "${CMAKE_SOURCE_DIR}/opencv/build" CACHE PATH "Path to OpenCV CMake config")
 find_package(OpenCV REQUIRED)
 
 add_subdirectory(livevel)
+
