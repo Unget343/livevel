@@ -13,34 +13,25 @@ int main()
 	cv::Mat frame;
 	cap >> frame;
 
-	if (frame.empty()) return 6;
-
-	// Выбор области для трекинга
-	cv::Rect roi = cv::selectROI("livevel", frame, false, false);
-	if (roi.empty()) return 7;
-
-	cv::destroyWindow("livevel");
-
-	// Создание трекера (TrackerMIL — не требует DNN-моделей)
-	cv::Ptr<cv::TrackerMIL> tracker = cv::TrackerMIL::create();
-	tracker->init(frame, roi);
-
-	while (cap.isOpened())
+	while (!frame.empty())
 	{
 		cap >> frame;
-		if (frame.empty()) break;
 
-		bool found = tracker->update(frame, roi);
+		// Проверяем, что кадр получен
+		if (frame.empty())
+			break;
 
-		if (found)
-		{
-			cv::rectangle(frame, roi, cv::Scalar(0, 255, 0), 2);
-		}
+		// Показываем кадр
+		cv::imshow("Camera", frame);
 
-		cv::imshow("livevel", frame);
-
-		if (cv::waitKey(1) == 27) break; // ESC для выхода
+		// Выход по клавише Esc
+		int key = cv::waitKey(1);
+		if (key == 27)
+			break;
 	}
+
+	cap.release();
+	cv::destroyAllWindows();
 
 	return 0;
 }
