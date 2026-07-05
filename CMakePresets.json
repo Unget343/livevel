@@ -10,8 +10,7 @@
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "cl.exe",
                 "CMAKE_CXX_COMPILER": "cl.exe",
-                "CMAKE_SYSTEM_NAME": "Windows",
-                "CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION": "10.0"
+                "CMAKE_SYSTEM_NAME": "Windows"
             },
             "condition": {
                 "type": "equals",
@@ -106,6 +105,38 @@
                     "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
                 }
             }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "x64-debug",
+            "configurePreset": "x64-debug",
+            "configuration": "Debug"
+        },
+        {
+            "name": "x64-release",
+            "configurePreset": "x64-release",
+            "configuration": "Release"
+        },
+        {
+            "name": "x86-debug",
+            "configurePreset": "x86-debug",
+            "configuration": "Debug"
+        },
+        {
+            "name": "x86-release",
+            "configurePreset": "x86-release",
+            "configuration": "Release"
+        },
+        {
+            "name": "linux-debug",
+            "configurePreset": "linux-debug",
+            "configuration": "Debug"
+        },
+        {
+            "name": "macos-debug",
+            "configurePreset": "macos-debug",
+            "configuration": "Debug"
         }
     ]
 }
