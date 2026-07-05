@@ -2,9 +2,9 @@
 #include <iostream>
 #include <thread>
 
-// #ifndef LIVEVEL_HAVE_OPENCV
-#define LIVEVEL_HAVE_OPENCV 1
-// #endif
+#ifndef LIVEVEL_HAVE_OPENCV
+#define LIVEVEL_HAVE_OPENCV 0
+#endif
 
 #if LIVEVEL_HAVE_OPENCV
 #include "camera.h"
