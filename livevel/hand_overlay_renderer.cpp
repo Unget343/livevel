@@ -33,7 +33,7 @@ void HandOverlayRenderer::drawLandmarks(cv::Mat& frame, const HandData& hand) co
     for (int i = 0; i < HandLandmarkIndex::COUNT; ++i) {
         const auto& lm = hand.landmarks[i];
         cv::Point pt(static_cast<int>(lm.x * fw), static_cast<int>(lm.y * fh));
-        
+
         cv::Scalar color = getLandmarkColor(i);
         cv::circle(frame, pt, landmarkRadius_, color, -1, cv::LINE_AA);
         cv::circle(frame, pt, landmarkRadius_ + 1, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
@@ -62,7 +62,7 @@ void HandOverlayRenderer::drawGestureLabel(cv::Mat& frame, const HandData& hand,
 
     int fw = frame.cols;
     int fh = frame.rows;
-    
+
     // Find bounding box to place label
     int minX = fw, minY = fh, maxX = 0, maxY = 0;
     for (int i = 0; i < HandLandmarkIndex::COUNT; ++i) {
@@ -74,21 +74,21 @@ void HandOverlayRenderer::drawGestureLabel(cv::Mat& frame, const HandData& hand,
         if (y > maxY) maxY = y;
     }
 
-    std::string label = std::string(gestureToString(gesture.gesture)) + " (" + 
+    std::string label = std::string(gestureToString(gesture.gesture)) + " (" +
                         handednessToString(gesture.hand) + ")";
-    
+
     // Format confidence
     char confStr[32];
     snprintf(confStr, sizeof(confStr), " %.1f%%", gesture.confidence * 100.0f);
     label += confStr;
 
     cv::Point textPos(minX, std::max(minY - 10, 20));
-    
+
     // Draw background rect
     int baseline = 0;
     cv::Size textSize = cv::getTextSize(label, cv::FONT_HERSHEY_SIMPLEX, 0.6, 2, &baseline);
     cv::Rect bgRect(textPos.x, textPos.y - textSize.height - 5, textSize.width, textSize.height + 10);
-    
+
     // Ensure rect is within frame
     bgRect.x = std::max(0, bgRect.x);
     bgRect.y = std::max(0, bgRect.y);
@@ -112,7 +112,7 @@ void HandOverlayRenderer::drawInfoPanel(cv::Mat& frame, const std::string& backe
     int baseline = 0;
     cv::Size textSize = cv::getTextSize(infoStr, cv::FONT_HERSHEY_SIMPLEX, 0.7, 2, &baseline);
     cv::Rect bgRect(textPos.x - 5, textPos.y - textSize.height - 5, textSize.width + 10, textSize.height + 10);
-    
+
     cv::rectangle(frame, bgRect, cv::Scalar(0, 0, 0, 128), cv::FILLED);
     cv::putText(frame, infoStr, textPos, cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(0, 255, 0), 2, cv::LINE_AA);
 }
@@ -121,7 +121,7 @@ cv::Scalar HandOverlayRenderer::getLandmarkColor(int landmarkIndex) const {
     if (landmarkIndex == HandLandmarkIndex::WRIST) {
         return cv::Scalar(255, 255, 255); // White
     }
-    
+
     // Group colors (BGR format)
     cv::Scalar colors[] = {
         cv::Scalar(0, 0, 255),    // Thumb: Red
@@ -135,7 +135,7 @@ cv::Scalar HandOverlayRenderer::getLandmarkColor(int landmarkIndex) const {
     if (fingerIndex >= 0 && fingerIndex < 5) {
         return colors[fingerIndex];
     }
-    
+
     return cv::Scalar(255, 255, 255); // Default
 }
 

@@ -10,7 +10,7 @@ namespace livevel {
 class FrameProcessor {
 public:
     FrameProcessor(const Config& config, size_t numThreads = 4);
-    
+
     // Processes the frame by splitting it, using cache, and returning the result
     cv::Mat process(const cv::Mat& inputFrame);
 

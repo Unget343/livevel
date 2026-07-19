@@ -41,7 +41,7 @@ public:
 private:
     std::unique_ptr<IHandTrackerBackend> backend_;
     HandOverlayRenderer renderer_;
-    
+
     std::vector<GestureEvent> latestGestures_;
     std::vector<GestureCallback> gestureCallbacks_;
 };

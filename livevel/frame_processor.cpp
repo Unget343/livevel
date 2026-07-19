@@ -16,7 +16,7 @@ cv::Mat FrameProcessor::process(const cv::Mat& inputFrame) {
     cv::Mat outputFrame = inputFrame.clone();
     int width = inputFrame.cols;
     int height = inputFrame.rows;
-    
+
     int rw = config_.regionWidth;
     int rh = config_.regionHeight <= 0 ? height : config_.regionHeight;
 
@@ -41,7 +41,7 @@ cv::Mat FrameProcessor::process(const cv::Mat& inputFrame) {
     for (size_t i = 0; i < numTasks; ++i) {
         size_t count = rectsPerTask + (i < remainder ? 1 : 0);
         if (count == 0) break;
-        
+
         size_t endIdx = startIdx + count;
 
         threadManager_->enqueue([this, &inputFrame, &outputFrame, rects, startIdx, endIdx]() {
@@ -49,18 +49,18 @@ cv::Mat FrameProcessor::process(const cv::Mat& inputFrame) {
                 const cv::Rect& rect = rects[r];
                 cv::Mat regionData = inputFrame(rect);
                 cv::Mat processedRegion;
-                
+
                 if (!cache_->find(regionData, processedRegion)) {
                     processedRegion = this->processRegionData(regionData);
                     cache_->add(regionData, processedRegion);
                 }
-                
+
                 // Write back to output
                 // Since blocks are non-overlapping, it is thread-safe to write to outputFrame
                 processedRegion.copyTo(outputFrame(rect));
             }
         });
-        
+
         startIdx = endIdx;
     }
 

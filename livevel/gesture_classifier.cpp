@@ -8,7 +8,7 @@ namespace livevel {
 
 std::array<ZoneState, static_cast<std::size_t>(HandZoneId::Count)> GestureClassifier::analyzeZones(const HandData& hand) const {
     std::array<ZoneState, static_cast<std::size_t>(HandZoneId::Count)> zones;
-    
+
     // Helper to determine if a specific segment of a finger is extended.
     auto checkExtended = [&](int startIdx, int endIdx, bool isThumb) -> std::pair<bool, float> {
         const auto& p1 = hand.landmarks[startIdx];
@@ -16,10 +16,10 @@ std::array<ZoneState, static_cast<std::size_t>(HandZoneId::Count)> GestureClassi
         if (p1.visibility < 0.5f || p2.visibility < 0.5f) {
             return {false, 0.0f}; // Occluded
         }
-        
+
         bool extended = false;
         float margin = 0.0f;
-        
+
         if (isThumb) {
             const auto& mcp = hand.landmarks[HandLandmarkIndex::THUMB_MCP];
             float p1Dist = std::abs(p1.x - mcp.x);
@@ -30,7 +30,7 @@ std::array<ZoneState, static_cast<std::size_t>(HandZoneId::Count)> GestureClassi
             extended = (p2.y < p1.y); // p2 (closer to tip) is above p1
             margin = std::abs(p2.y - p1.y);
         }
-        
+
         float conf = std::min(margin / 0.15f, 1.0f);
         return {extended, conf};
     };
@@ -45,8 +45,8 @@ std::array<ZoneState, static_cast<std::size_t>(HandZoneId::Count)> GestureClassi
 
     // Palm Zones
     zones[static_cast<int>(HandZoneId::PalmBase)].isVisible = checkVisibility({HandLandmarkIndex::WRIST, HandLandmarkIndex::THUMB_CMC});
-    zones[static_cast<int>(HandZoneId::PalmBase)].confidence = 1.0f; 
-    
+    zones[static_cast<int>(HandZoneId::PalmBase)].confidence = 1.0f;
+
     zones[static_cast<int>(HandZoneId::PalmTop)].isVisible = checkVisibility({HandLandmarkIndex::INDEX_MCP, HandLandmarkIndex::MIDDLE_MCP, HandLandmarkIndex::RING_MCP, HandLandmarkIndex::PINKY_MCP});
     zones[static_cast<int>(HandZoneId::PalmTop)].confidence = 1.0f;
 
@@ -62,12 +62,12 @@ std::array<ZoneState, static_cast<std::size_t>(HandZoneId::Count)> GestureClassi
     for (int i = 0; i < 5; ++i) {
         int baseZoneIdx = static_cast<int>(HandZoneId::ThumbBase) + i * 2;
         int tipZoneIdx = baseZoneIdx + 1;
-        
+
         auto baseExt = checkExtended(kFingerData[i].mcp, kFingerData[i].pip, kFingerData[i].isThumb);
         zones[baseZoneIdx].isVisible = checkVisibility({kFingerData[i].mcp, kFingerData[i].pip});
         zones[baseZoneIdx].isExtended = baseExt.first;
         zones[baseZoneIdx].confidence = baseExt.second;
-        
+
         auto tipExt = checkExtended(kFingerData[i].pip, kFingerData[i].tip, kFingerData[i].isThumb);
         zones[tipZoneIdx].isVisible = checkVisibility({kFingerData[i].pip, kFingerData[i].tip});
         zones[tipZoneIdx].isExtended = tipExt.first;
@@ -86,7 +86,7 @@ float GestureClassifier::scoreGesture(const std::array<ZoneState, static_cast<st
     for (int i = 0; i < 5; ++i) {
         int baseZoneIdx = static_cast<int>(HandZoneId::ThumbBase) + i * 2;
         int tipZoneIdx = baseZoneIdx + 1;
-        
+
         if (zones[baseZoneIdx].isVisible) {
             visibleZones++;
             maxPossibleScore += 1.0f;
@@ -96,7 +96,7 @@ float GestureClassifier::scoreGesture(const std::array<ZoneState, static_cast<st
                 score -= zones[baseZoneIdx].confidence;
             }
         }
-        
+
         if (zones[tipZoneIdx].isVisible) {
             visibleZones++;
             maxPossibleScore += 1.0f;
@@ -107,7 +107,7 @@ float GestureClassifier::scoreGesture(const std::array<ZoneState, static_cast<st
             }
         }
     }
-    
+
     // Add palm zones to visible count to require some hand structure
     if (zones[static_cast<int>(HandZoneId::PalmBase)].isVisible) visibleZones++;
     if (zones[static_cast<int>(HandZoneId::PalmTop)].isVisible) visibleZones++;
@@ -147,14 +147,14 @@ GestureEvent GestureClassifier::classifySingleHand(const HandData& hand, int han
 
     for (const auto& candidate : candidates) {
         float score = scoreGesture(zones, candidate.expected);
-        
+
         if (candidate.gesture == HandGesture::ThumbUp && score > 0.0f) {
             // Need wrist and middle MCP to distinguish ThumbUp vs ThumbDown
             if (hand.landmarks[HandLandmarkIndex::WRIST].visibility > 0.5f &&
                 hand.landmarks[HandLandmarkIndex::MIDDLE_MCP].visibility > 0.5f) {
                 const auto& wrist = hand.landmarks[HandLandmarkIndex::WRIST];
                 const auto& middleMcp = hand.landmarks[HandLandmarkIndex::MIDDLE_MCP];
-                
+
                 if (wrist.y > middleMcp.y) {
                     // It is ThumbUp, keep the score
                 } else {
@@ -163,14 +163,14 @@ GestureEvent GestureClassifier::classifySingleHand(const HandData& hand, int han
                         bestScore = score;
                         bestGesture = HandGesture::ThumbDown;
                     }
-                    continue; 
+                    continue;
                 }
             } else {
                 // If occluded, default to ThumbUp as it's more common, but reduce score slightly
                 score *= 0.9f;
             }
         }
-        
+
         if (score > bestScore) {
             bestScore = score;
             bestGesture = candidate.gesture;

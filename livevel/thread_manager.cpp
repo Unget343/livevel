@@ -9,8 +9,8 @@ ThreadManager::ThreadManager(size_t numThreads) : stop_(false), activeTasks_(0) 
                 std::function<void()> task;
                 {
                     std::unique_lock<std::mutex> lock(this->queueMutex_);
-                    this->condition_.wait(lock, [this] { 
-                        return this->stop_ || !this->tasks_.empty(); 
+                    this->condition_.wait(lock, [this] {
+                        return this->stop_ || !this->tasks_.empty();
                     });
                     if (this->stop_ && this->tasks_.empty()) {
                         return;
@@ -18,10 +18,10 @@ ThreadManager::ThreadManager(size_t numThreads) : stop_(false), activeTasks_(0) 
                     task = std::move(this->tasks_.front());
                     this->tasks_.pop();
                 }
-                
+
                 // Execute the task
                 task();
-                
+
                 {
                     std::lock_guard<std::mutex> lock(this->queueMutex_);
                     this->activeTasks_--;

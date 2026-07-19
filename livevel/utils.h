@@ -9,7 +9,7 @@ struct Config {
     int regionHeight = 15;
     int cacheSize = 100;
     double cacheTolerance = 10.0; // Tolerance for cache matching
-    
+
     // Hand tracking config
     bool enableHandTracking = true;
     std::string modelDir = "models";

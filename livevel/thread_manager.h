@@ -27,7 +27,7 @@ private:
     std::mutex queueMutex_;
     std::condition_variable condition_;
     std::condition_variable waitCondition_;
-    
+
     std::atomic<bool> stop_;
     std::atomic<int> activeTasks_;
 };
