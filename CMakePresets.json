@@ -1,4 +1,4 @@
-﻿{
+{
     "version": 3,
     "configurePresets": [
         {
@@ -10,7 +10,8 @@
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "cl.exe",
                 "CMAKE_CXX_COMPILER": "cl.exe",
-                "CMAKE_SYSTEM_NAME": "Windows"
+                "CMAKE_SYSTEM_NAME": "Windows",
+                "CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION": "10.0"
             },
             "condition": {
                 "type": "equals",

@@ -28,7 +28,7 @@ if(NOT DEFINED OpenCV_DIR)
   endif()
 endif()
 
-set(LIVEVEL_OPENCV_COMPONENTS core videoio video imgproc highgui)
+set(LIVEVEL_OPENCV_COMPONENTS core videoio video imgproc highgui geometry)
 find_package(OpenCV QUIET COMPONENTS ${LIVEVEL_OPENCV_COMPONENTS})
 
 set(LIVEVEL_WITH_OPENCV ${OpenCV_FOUND})
@@ -42,7 +42,7 @@ if(NOT LIVEVEL_WITH_OPENCV AND USE_CPM)
     GITHUB_REPOSITORY opencv/opencv
     GIT_TAG 4.8.1
     OPTIONS
-      "BUILD_LIST core,videoio,video,imgproc,highgui"
+      "BUILD_LIST core,videoio,video,imgproc,highgui,geometry"
       "BUILD_opencv_apps OFF"
       "BUILD_TESTS OFF"
       "BUILD_PERF_TESTS OFF"
@@ -53,6 +53,9 @@ if(NOT LIVEVEL_WITH_OPENCV AND USE_CPM)
       AND TARGET opencv_imgproc AND TARGET opencv_highgui)
     set(LIVEVEL_WITH_OPENCV TRUE)
     set(LIVEVEL_OPENCV_LIBS opencv_core opencv_videoio opencv_video opencv_imgproc opencv_highgui)
+    if(TARGET opencv_geometry)
+      list(APPEND LIVEVEL_OPENCV_LIBS opencv_geometry)
+    endif()
     set(LIVEVEL_OPENCV_INCLUDE_DIRS)
   endif()
 endif()
