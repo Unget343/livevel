@@ -11,6 +11,7 @@
 #endif
 
 #include <string>
+#include <mutex>
 
 namespace livevel {
 
@@ -31,6 +32,8 @@ public:
     std::vector<GestureEvent> recognizeGestures(const HandTrackingResult& result) override;
     std::string backendName() const override { return "MediaPipe"; }
 
+    void processAsyncResult(int status, const void* result, void* image, int64_t timestamp_ms);
+
 private:
     bool loadDll();
     void unloadDll();
@@ -46,6 +49,8 @@ private:
 
     GestureClassifier gestureClassifier_;
     bool initialized_ = false;
+    std::mutex resultMutex_;
+    HandTrackingResult latestResult_;
 
     // ─── Function pointers loaded from DLL ──────────────────────────────
 
@@ -69,6 +74,12 @@ private:
         void* landmarker, void* image, const void* options,
         int64_t timestamp_ms, void* result, char** error_msg);
     FnMpHandLandmarkerDetectForVideo fnDetectForVideo_ = nullptr;
+
+    // Hand landmarker detect async
+    using FnMpHandLandmarkerDetectAsync = int (*)(
+        void* landmarker, void* image, const void* options,
+        int64_t timestamp_ms, char** error_msg);
+    FnMpHandLandmarkerDetectAsync fnDetectAsync_ = nullptr;
 
     // Hand landmarker close result
     using FnMpHandLandmarkerCloseResult = void (*)(void* result);

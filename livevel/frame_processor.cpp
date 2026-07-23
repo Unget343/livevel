@@ -1,6 +1,7 @@
 #include "frame_processor.h"
 #include <opencv2/imgproc.hpp>
 #include <vector>
+#include <memory>
 
 namespace livevel {
 

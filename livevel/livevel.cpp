@@ -9,6 +9,7 @@
 #if LIVEVEL_HAVE_OPENCV
 #include "camera.h"
 #include "frame_processor.h"
+#include "hand_tracker.h"
 #include "renderer.h"
 #include "utils.h"
 
@@ -40,8 +41,15 @@ int main() {
 
     livevel::FrameProcessor processor(config, threads);
 
+    livevel::HandTracker handTracker;
+    if (!handTracker.initialize("models", 1)) {
+        std::cerr << "Warning: Failed to initialize HandTracker. Hand tracking will be disabled.\n";
+    }
+
     cv::Mat frame;
     int frameCount = 0;
+    int64_t lastTimestamp = 0;
+    double currentFps = 30.0;
     auto tStart = std::chrono::steady_clock::now();
 
     while (camera.isOpened()) {
@@ -54,7 +62,7 @@ int main() {
         frameCount++;
         if (frameCount % 30 == 0) {
             auto tEnd = std::chrono::steady_clock::now();
-            double fps = 30.0 / std::chrono::duration<double>(tEnd - tStart).count();
+            currentFps = 30.0 / std::chrono::duration<double>(tEnd - tStart).count();
             tStart = tEnd;
 
             const auto& cache = processor.getCache();
@@ -64,9 +72,20 @@ int main() {
                 ? static_cast<double>(hits) / (hits + misses) * 100.0
                 : 0.0;
 
-            std::cout << "FPS: " << fps << " | Cache Hit Rate: " << hitRate << "% ("
+            std::cout << "FPS: " << currentFps << " | Cache Hit Rate: " << hitRate << "% ("
                       << hits << " hits, " << misses << " misses)\n";
         }
+
+        // Ensure monotonically increasing timestamp for MediaPipe Live Stream
+        auto now = std::chrono::steady_clock::now();
+        int64_t timestampMs = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+        if (timestampMs <= lastTimestamp) {
+            timestampMs = lastTimestamp + 1;
+        }
+        lastTimestamp = timestampMs;
+
+        auto result = handTracker.processFrame(frame, timestampMs);
+        handTracker.drawOverlay(processedFrame, result, currentFps);
 
         renderer.render(processedFrame);
 
