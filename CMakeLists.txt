@@ -27,7 +27,7 @@ set(MEDIAPIPE_DLL "" CACHE FILEPATH "Path to MediaPipe C runtime (libmediapipe.d
 set(MEDIAPIPE_MODEL "${CMAKE_SOURCE_DIR}/models/hand_landmarker.task" CACHE FILEPATH
     "Path to the MediaPipe Hand Landmarker model")
 
-option(USE_CPM "Download OpenCV with CPM when it is not installed locally" OFF)
+option(USE_CPM "Download OpenCV with CPM when it is not installed locally" ON)
 
 if(NOT DEFINED OpenCV_DIR)
   set(_livevel_local_opencv_dir "${CMAKE_SOURCE_DIR}/opencv/build")
@@ -73,7 +73,7 @@ endif()
 if(LIVEVEL_WITH_OPENCV)
   message(STATUS "Found OpenCV ${OpenCV_VERSION}")
 else()
-  message(STATUS "OpenCV was not found. The livevel executable will build with camera tracking disabled.")
+  message(FATAL_ERROR "OpenCV is required for camera and finger tracking. Install OpenCV or configure with -DUSE_CPM=ON.")
 endif()
 
 add_subdirectory(livevel)

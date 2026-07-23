@@ -21,4 +21,8 @@ manually deployed binary, put `libmediapipe.dll` beside it or set
 `LIVEVEL_MEDIAPIPE_DLL` to its full path. The tracker reports an error instead
 of fabricating finger joints if the model or runtime is unavailable.
 
+Do not run an old executable built before this setup: a build without OpenCV
+now fails at configure time instead of opening a camera app with tracking
+disabled.
+
 Press `Esc` to close the camera window.
