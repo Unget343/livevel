@@ -17,8 +17,7 @@ public:
     HandTracker();
     ~HandTracker();
 
-    // Initialize the tracking system.
-    // Tries to load MediaPipe, falls back to OpenCV skin detection.
+    // Initialize the 21-landmark MediaPipe hand tracker.
     bool initialize(const std::string& modelDir = "models", int maxHands = 2);
 
     // Process a frame: detect hands and recognize gestures.

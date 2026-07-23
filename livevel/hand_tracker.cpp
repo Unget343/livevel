@@ -1,6 +1,5 @@
 #include "hand_tracker.h"
 #include "mediapipe_backend.h"
-#include "opencv_gesture_backend.h"
 #include <iostream>
 
 namespace livevel {
@@ -9,16 +8,16 @@ HandTracker::HandTracker() = default;
 HandTracker::~HandTracker() = default;
 
 bool HandTracker::initialize(const std::string& modelDir, int maxHands) {
-    // Attempt MediaPipe first
     backend_ = std::make_unique<MediaPipeBackend>();
     if (backend_->initialize(modelDir, maxHands)) {
         return true;
     }
 
-    // Fallback to OpenCV if MediaPipe fails or is unavailable
-    std::cout << "[HandTracker] Falling back to OpenCV backend.\n";
-    backend_ = std::make_unique<OpenCVGestureBackend>();
-    return backend_->initialize(modelDir, maxHands);
+    // A contour-based fallback cannot return real finger joints, so exposing
+    // it as a hand tracker would produce misleading data.
+    backend_.reset();
+    std::cerr << "[HandTracker] MediaPipe is required for 21-point finger tracking.\n";
+    return false;
 }
 
 HandTrackingResult HandTracker::processFrame(const cv::Mat& frame, int64_t timestampMs) {

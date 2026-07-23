@@ -42,7 +42,7 @@ int main() {
     livevel::FrameProcessor processor(config, threads);
 
     livevel::HandTracker handTracker;
-    if (!handTracker.initialize("models", 1)) {
+    if (!handTracker.initialize("models", 2)) {
         std::cerr << "Warning: Failed to initialize HandTracker. Hand tracking will be disabled.\n";
     }
 

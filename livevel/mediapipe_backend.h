@@ -1,6 +1,7 @@
 #pragma once
 #include "hand_tracker_backend.h"
 #include "gesture_classifier.h"
+#include "mediapipe_c_api.h"
 
 #ifdef _WIN32
 #ifndef NOMINMAX
@@ -11,16 +12,15 @@
 #endif
 
 #include <string>
-#include <mutex>
 
 namespace livevel {
 
 // MediaPipe backend that loads the MediaPipe Tasks C API DLL at runtime.
-// Uses MpHandLandmarkerDetectForVideo for per-frame detection,
-// and the shared GestureClassifier for gesture recognition.
+// Uses synchronous video-mode detection so every submitted camera frame gets
+// its own 21-landmark result. The shared GestureClassifier handles gestures.
 //
 // Requires:
-//   - mediapipe_tasks.dll in PATH or alongside the executable
+//   - libmediapipe.dll in the executable directory or LIVEVEL_MEDIAPIPE_DLL
 //   - hand_landmarker.task model file
 class MediaPipeBackend : public IHandTrackerBackend {
 public:
@@ -32,8 +32,6 @@ public:
     std::vector<GestureEvent> recognizeGestures(const HandTrackingResult& result) override;
     std::string backendName() const override { return "MediaPipe"; }
 
-    void processAsyncResult(int status, const void* result, void* image, int64_t timestamp_ms);
-
 private:
     bool loadDll();
     void unloadDll();
@@ -44,13 +42,12 @@ private:
     void* dllHandle_ = nullptr;
 #endif
 
-    // Opaque pointer from MediaPipe C API
+    // Opaque pointer from the MediaPipe C API.
     void* landmarker_ = nullptr;
 
     GestureClassifier gestureClassifier_;
     bool initialized_ = false;
-    std::mutex resultMutex_;
-    HandTrackingResult latestResult_;
+    int64_t lastTimestampMs_ = -1;
 
     // ─── Function pointers loaded from DLL ──────────────────────────────
 
@@ -66,23 +63,17 @@ private:
 
     // Hand landmarker create
     using FnMpHandLandmarkerCreate = int (*)(
-        void* options, void** landmarker, char** error_msg);
+        mediapipe::HandLandmarkerOptions* options, void** landmarker, char** error_msg);
     FnMpHandLandmarkerCreate fnCreate_ = nullptr;
 
     // Hand landmarker detect for video
     using FnMpHandLandmarkerDetectForVideo = int (*)(
         void* landmarker, void* image, const void* options,
-        int64_t timestamp_ms, void* result, char** error_msg);
+        int64_t timestamp_ms, mediapipe::HandLandmarkerResult* result, char** error_msg);
     FnMpHandLandmarkerDetectForVideo fnDetectForVideo_ = nullptr;
 
-    // Hand landmarker detect async
-    using FnMpHandLandmarkerDetectAsync = int (*)(
-        void* landmarker, void* image, const void* options,
-        int64_t timestamp_ms, char** error_msg);
-    FnMpHandLandmarkerDetectAsync fnDetectAsync_ = nullptr;
-
     // Hand landmarker close result
-    using FnMpHandLandmarkerCloseResult = void (*)(void* result);
+    using FnMpHandLandmarkerCloseResult = void (*)(mediapipe::HandLandmarkerResult* result);
     FnMpHandLandmarkerCloseResult fnCloseResult_ = nullptr;
 
     // Hand landmarker close

@@ -18,6 +18,15 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+include(CTest)
+
+# MediaPipe is loaded at runtime, so no import library is required. Point this
+# at libmediapipe.dll to copy it next to the executable and enable the runtime
+# smoke test.
+set(MEDIAPIPE_DLL "" CACHE FILEPATH "Path to MediaPipe C runtime (libmediapipe.dll)")
+set(MEDIAPIPE_MODEL "${CMAKE_SOURCE_DIR}/models/hand_landmarker.task" CACHE FILEPATH
+    "Path to the MediaPipe Hand Landmarker model")
+
 option(USE_CPM "Download OpenCV with CPM when it is not installed locally" OFF)
 
 if(NOT DEFINED OpenCV_DIR)
@@ -28,7 +37,7 @@ if(NOT DEFINED OpenCV_DIR)
   endif()
 endif()
 
-set(LIVEVEL_OPENCV_COMPONENTS core videoio video imgproc highgui geometry)
+set(LIVEVEL_OPENCV_COMPONENTS core videoio video imgproc highgui imgcodecs)
 find_package(OpenCV QUIET COMPONENTS ${LIVEVEL_OPENCV_COMPONENTS})
 
 set(LIVEVEL_WITH_OPENCV ${OpenCV_FOUND})
@@ -42,7 +51,7 @@ if(NOT LIVEVEL_WITH_OPENCV AND USE_CPM)
     GITHUB_REPOSITORY opencv/opencv
     GIT_TAG 4.8.1
     OPTIONS
-      "BUILD_LIST core,videoio,video,imgproc,highgui,geometry"
+      "BUILD_LIST core,videoio,video,imgproc,highgui,imgcodecs"
       "BUILD_opencv_apps OFF"
       "BUILD_TESTS OFF"
       "BUILD_PERF_TESTS OFF"
@@ -50,13 +59,14 @@ if(NOT LIVEVEL_WITH_OPENCV AND USE_CPM)
   )
 
   if(TARGET opencv_core AND TARGET opencv_videoio AND TARGET opencv_video
-      AND TARGET opencv_imgproc AND TARGET opencv_highgui)
+      AND TARGET opencv_imgproc AND TARGET opencv_highgui AND TARGET opencv_imgcodecs)
     set(LIVEVEL_WITH_OPENCV TRUE)
-    set(LIVEVEL_OPENCV_LIBS opencv_core opencv_videoio opencv_video opencv_imgproc opencv_highgui)
-    if(TARGET opencv_geometry)
-      list(APPEND LIVEVEL_OPENCV_LIBS opencv_geometry)
-    endif()
-    set(LIVEVEL_OPENCV_INCLUDE_DIRS)
+    set(LIVEVEL_OPENCV_LIBS opencv_core opencv_videoio opencv_video opencv_imgproc opencv_highgui opencv_imgcodecs)
+    set(LIVEVEL_OPENCV_INCLUDE_DIRS "${CMAKE_BINARY_DIR}" "${opencv_BINARY_DIR}")
+    foreach(component IN LISTS LIVEVEL_OPENCV_COMPONENTS)
+      list(APPEND LIVEVEL_OPENCV_INCLUDE_DIRS
+        "${opencv_SOURCE_DIR}/modules/${component}/include")
+    endforeach()
   endif()
 endif()
 
@@ -67,4 +77,21 @@ else()
 endif()
 
 add_subdirectory(livevel)
+
+if(BUILD_TESTING)
+  add_executable(hand_tracking_contract_test tests/hand_tracking_contract_test.cpp)
+  target_include_directories(hand_tracking_contract_test PRIVATE
+    "${CMAKE_SOURCE_DIR}/livevel")
+  target_compile_features(hand_tracking_contract_test PRIVATE cxx_std_20)
+  add_test(NAME hand_tracking_contract COMMAND hand_tracking_contract_test)
+
+  if(WIN32 AND EXISTS "${MEDIAPIPE_DLL}" AND EXISTS "${MEDIAPIPE_MODEL}")
+    add_executable(mediapipe_runtime_test tests/mediapipe_runtime_test.cpp)
+    target_include_directories(mediapipe_runtime_test PRIVATE
+      "${CMAKE_SOURCE_DIR}/livevel")
+    target_compile_features(mediapipe_runtime_test PRIVATE cxx_std_20)
+    add_test(NAME mediapipe_runtime
+      COMMAND mediapipe_runtime_test "${MEDIAPIPE_DLL}" "${MEDIAPIPE_MODEL}")
+  endif()
+endif()
 

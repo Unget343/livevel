@@ -1,10 +1,11 @@
 # MediaPipe Models
 
-This directory is used to store MediaPipe model files.
+This directory stores the MediaPipe Hand Landmarker model.
 
-To enable the full MediaPipe C API backend for hand tracking, you need to download the `hand_landmarker.task` model file and place it in this directory.
+Run this once from the repository root:
 
-**Download link:**
-[hand_landmarker.task](https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task)
+```powershell
+.\models\download_model.ps1
+```
 
-If the model file or `mediapipe_tasks.dll` is missing, the application will automatically fall back to the OpenCV skin-color based hand tracker.
+The application intentionally does not fall back to contour-based pseudo-landmarks: proper finger tracking requires all 21 MediaPipe landmarks.

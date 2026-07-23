@@ -2,6 +2,7 @@
 out/
 .vs/
 opencv/
+models/*.task
 
 # Prerequisites
 *.d

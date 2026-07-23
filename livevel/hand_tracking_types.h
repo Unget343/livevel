@@ -36,7 +36,7 @@ namespace HandLandmarkIndex {
 // Connections between landmarks for skeleton drawing (pair of indices).
 inline constexpr std::array<std::array<int, 2>, 21> kHandConnections = {{
     // Palm
-    {0, 1}, {0, 5}, {5, 9}, {9, 13}, {13, 17}, {0, 17},
+    {0, 1}, {1, 5}, {5, 9}, {9, 13}, {13, 17}, {0, 17},
     // Thumb
     {1, 2}, {2, 3}, {3, 4},
     // Index finger
@@ -110,6 +110,9 @@ struct ZoneState {
 // Complete data for a single detected hand.
 struct HandData {
     std::array<HandLandmark, HandLandmarkIndex::COUNT> landmarks{};
+    // 3D positions in metres, when the active tracker provides them.
+    std::array<HandLandmark, HandLandmarkIndex::COUNT> worldLandmarks{};
+    bool hasWorldLandmarks = false;
     Handedness handedness = Handedness::Unknown;
     float confidence = 0.0f;
 };
