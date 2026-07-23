@@ -2,7 +2,8 @@
 
 This directory stores the MediaPipe Hand Landmarker model.
 
-Run this once from the repository root:
+Normal CMake builds download the model automatically. The script below is only
+for an offline/manual model download:
 
 ```powershell
 .\models\download_model.ps1
